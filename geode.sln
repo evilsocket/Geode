@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geode", "geode\geode.vcproj", "{86A5B417-BD0F-423D-A25F-A10F1970EE78}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geode_test_launcher", "geode_test_launcher\geode_test_launcher.vcproj", "{2E215CCD-0611-44F0-B6D7-DFFB8B7DE29A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{86A5B417-BD0F-423D-A25F-A10F1970EE78}.Debug|Win32.ActiveCfg = Debug|Win32
+		{86A5B417-BD0F-423D-A25F-A10F1970EE78}.Debug|Win32.Build.0 = Debug|Win32
+		{86A5B417-BD0F-423D-A25F-A10F1970EE78}.Release|Win32.ActiveCfg = Release|Win32
+		{86A5B417-BD0F-423D-A25F-A10F1970EE78}.Release|Win32.Build.0 = Release|Win32
+		{2E215CCD-0611-44F0-B6D7-DFFB8B7DE29A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2E215CCD-0611-44F0-B6D7-DFFB8B7DE29A}.Debug|Win32.Build.0 = Debug|Win32
+		{2E215CCD-0611-44F0-B6D7-DFFB8B7DE29A}.Release|Win32.ActiveCfg = Release|Win32
+		{2E215CCD-0611-44F0-B6D7-DFFB8B7DE29A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
