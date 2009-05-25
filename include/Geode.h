@@ -28,6 +28,7 @@
 #include <memory.h>
 #include <vector>
 #include <algorithm>
+#include <pthread.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/X.h>
@@ -359,27 +360,21 @@ class GeodeGraphicalContext
 
 		int				   m_width,
 						   m_height;
-
 		char			   m_title[0xFF];
-
-		HWND			   m_hwnd;
-		HDC				   m_hdc;
-
-		WNDPROC			   m_wndproc;
-
-		HANDLE			   m_ready_event,
-		  				   m_destroy_event;
-
-		BITMAPINFO		   m_bmpinfo;
-
+		
+		Display           *m_display;
+		GC				   m_gc;
+		Window             m_window;
+		
 		GeodeFrameBuffer * m_buffer;
-
-		static DWORD WINAPI msg_dispatch_thread( LPVOID lpParam );
-
+		
+		static void * msg_dispatch_thread( void *arg );
+		
 	public  :
 
-		GeodeGraphicalContext( const char * title, int width, int height, WNDPROC wndProc, int style = WS_OVERLAPPEDWINDOW );
-		GeodeGraphicalContext( HWND hwnd );
+		//GeodeGraphicalContext( const char * title, int width, int height, WNDPROC wndProc, int style = WS_OVERLAPPEDWINDOW );
+		GeodeGraphicalContext( Window * wnd );
+				
 		~GeodeGraphicalContext();
 
 		int style;
@@ -388,12 +383,10 @@ class GeodeGraphicalContext
 
 		int				   width();
 		int				   height();
-		HWND&			   hwnd();
-		HDC&			   hdc();
+		Window *           wnd();
+		GC&                gc();
 		char *			   title();
-		WNDPROC			   wndproc();
-		HANDLE&			   ready_event();
-		HANDLE&			   destroy_event();
+		
 		GeodeFrameBuffer * buffer();
 
 		void render( GeodeObject& obj, gcolor_t * color );
@@ -401,7 +394,7 @@ class GeodeGraphicalContext
 		void update();
 		//void update( int x0, int y0, int x1, int y1 );
 
-		void wait( unsigned int ms = INFINITE );
+		void wait( unsigned int ms );
 		
 		GeodeGraphicalContext& resize( int width, int height, bool redraw = true, bool resize_buffer = true );
 };	

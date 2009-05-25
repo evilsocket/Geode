@@ -90,10 +90,8 @@ LRESULT APIENTRY GeodeWindow::GeodeWindowProc( HWND hwnd, UINT uMsg, WPARAM wPar
 	return 0;
 }
 
-GeodeWindow::GeodeWindow( const char * title, bool fullscreen, int width, int height, GeodeEventReceiver * eventReceiver )
-{
-	if( !eventReceiver )
-	{
+GeodeWindow::GeodeWindow( const char * title, bool fullscreen, int width, int height, GeodeEventReceiver * eventReceiver ) {
+	if( !eventReceiver ) {
 		throw new GeodeException( 0, "Cannot create GeodeWindow without a valid GeodeEventReceiver" );
 		return;
 	}

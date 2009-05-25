@@ -21,7 +21,7 @@
 
 namespace GEngine
 {
-
+/*
 DWORD WINAPI GeodeGraphicalContext::msg_dispatch_thread( LPVOID lpParam )
 {
 	geode_trace( "GeodeGraphicalContext::msg_dispatch_thread( 0x%X )\n", lpParam );
@@ -90,6 +90,7 @@ DWORD WINAPI GeodeGraphicalContext::msg_dispatch_thread( LPVOID lpParam )
 
 	return 0;
 }
+*/
 
 GeodeGraphicalContext::GeodeGraphicalContext( const char * title, int width, int height, WNDPROC wndProc, int style /*= WS_OVERLAPPEDWINDOW*/ )
 {
@@ -265,11 +266,9 @@ void GeodeGraphicalContext::update()
 	}
 }
 
-void GeodeGraphicalContext::wait( unsigned int ms /*= INFINITE*/ )
-{
+void GeodeGraphicalContext::wait( unsigned int ms ) {
 	geode_trace( "GeodeGraphicalContext::wait( %d )\n", ms );
-
-	::WaitForSingleObject( m_destroy_event, ms );
+	sleep(ms);
 }
 
 GeodeGraphicalContext& GeodeGraphicalContext::resize( int width, int height, bool redraw /*= true*/, bool resize_buffer /*= true*/ )
