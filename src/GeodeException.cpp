@@ -24,7 +24,7 @@ namespace GEngine
 
 GeodeException::GeodeException( int error_code, char * msgFormat, ... )
 {
-	geode_trace( "GeodeException::GeodeException( %d, %s, ... )\n", error_code, msgFormat );
+	g_trace( "GeodeException::GeodeException( %d, %s, ... )\n", error_code, msgFormat );
 
 	va_list args;
 
@@ -37,7 +37,7 @@ GeodeException::GeodeException( int error_code, char * msgFormat, ... )
 
 GeodeException::GeodeException( char * msgFormat, ... )
 {
-	geode_trace( "GeodeException::GeodeException( %s, ... )\n", msgFormat );
+	g_trace( "GeodeException::GeodeException( %s, ... )\n", msgFormat );
 
 	m_error_code = ::GetLastError();
 
@@ -50,14 +50,14 @@ GeodeException::GeodeException( char * msgFormat, ... )
 
 int GeodeException::code()
 { 
-	geode_trace( "GeodeException::code()\n" );
+	g_trace( "GeodeException::code()\n" );
 
 	return m_error_code; 
 }
 
 char * GeodeException::message()
 { 
-	geode_trace( "GeodeException::message()\n" );
+	g_trace( "GeodeException::message()\n" );
 
 	return m_error_message; 
 }

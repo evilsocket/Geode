@@ -24,7 +24,7 @@ namespace GEngine
 
 Geode3DObject::Geode3DObject()
 {
-	geode_trace( "Geode3DObject::Geode3DObject()\n" );
+	g_trace( "Geode3DObject::Geode3DObject()\n" );
 
 	m_camera_x = 0;
 	m_camera_y = 0;
@@ -33,28 +33,28 @@ Geode3DObject::Geode3DObject()
 
 void Geode3DObject::add_primitive( int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2 )
 {
-	geode_trace( "Geode3DObject::add_primitive( %d, %d, %d, %d, %d, %d, %d, %d, %d )\n",  x0,  y0,  z0,  x1,  y1,  z1,  x2,  y2,  z2 );
+	g_trace( "Geode3DObject::add_primitive( %d, %d, %d, %d, %d, %d, %d, %d, %d )\n",  x0,  y0,  z0,  x1,  y1,  z1,  x2,  y2,  z2 );
 
 	m_pvector.push_back( new GeodePrimitive3D(x0, y0, z0, x1, y1, z1, x2, y2, z2) );
 }
 
 void Geode3DObject::add_primitive( GeodeVertex& v1, GeodeVertex& v2, GeodeVertex& v3 )
 {
-	geode_trace( "Geode3DObject::add_primitive( v1, v2, v3 )\n" );
+	g_trace( "Geode3DObject::add_primitive( v1, v2, v3 )\n" );
 
 	m_pvector.push_back( new GeodePrimitive3D(v1,v2,v3) );
 }
 
 GeodePrimitive3D& Geode3DObject::operator[] ( int idx )
 {
-	geode_trace( "Geode3DObject::operator[] ( %d )\n", idx );
+	g_trace( "Geode3DObject::operator[] ( %d )\n", idx );
 
 	return *m_pvector[idx];
 }
 
 void Geode3DObject::create( int size, ... )
 {
-	geode_trace( "Geode3DObject::create( %d, ... )\n", size );
+	g_trace( "Geode3DObject::create( %d, ... )\n", size );
 
 	va_list val_list;            
 
@@ -77,21 +77,21 @@ void Geode3DObject::create( int size, ... )
 
 void Geode3DObject::move_camera_x( int n )
 {
-	geode_trace( "Geode3DObject::move_camera_x( %d )\n", n );
+	g_trace( "Geode3DObject::move_camera_x( %d )\n", n );
 
 	m_camera_x += n;
 }
 
 void Geode3DObject::move_camera_y( int n )
 {
-	geode_trace( "Geode3DObject::move_camera_y( %d )\n", n );
+	g_trace( "Geode3DObject::move_camera_y( %d )\n", n );
 
 	m_camera_y += n;
 }
 
 void Geode3DObject::move_camera_z( int n )
 {
-	geode_trace( "Geode3DObject::move_camera_z( %d )\n", n );
+	g_trace( "Geode3DObject::move_camera_z( %d )\n", n );
 
 	m_camera_z += n;
 }
@@ -103,14 +103,14 @@ bool primitive_is_less_Z( GeodePrimitive3D * p1, GeodePrimitive3D * p2 )
 
 void Geode3DObject::Z_sort_primitives()
 {
-	geode_trace( "Geode3DObject::Z_sort_primitives()\n" );
+	g_trace( "Geode3DObject::Z_sort_primitives()\n" );
 
 	sort( m_pvector.begin( ), m_pvector.end( ), primitive_is_less_Z );
 }
 
 inline GeodePoint Geode3DObject::project_vertex( GeodeVertex& v, int X0, int Y0, int Z0, double focale /*= 900*/ )
 {
-	geode_trace( "Geode3DObject::project_vertex( v, %d, %d, %d, %f )\n", X0, Y0, Z0, focale );
+	g_trace( "Geode3DObject::project_vertex( v, %d, %d, %d, %f )\n", X0, Y0, Z0, focale );
 
 	GeodePoint point;
 
@@ -124,7 +124,7 @@ inline GeodePoint Geode3DObject::project_vertex( GeodeVertex& v, int X0, int Y0,
 
 inline GeodePrimitive2D& Geode3DObject::project_primitive( GeodeVertex& v1, GeodeVertex& v2, GeodeVertex& v3 )
 {
-	geode_trace( "Geode3DObject::project_primitive( v1, v2, v3 )\n" );
+	g_trace( "Geode3DObject::project_primitive( v1, v2, v3 )\n" );
 
 	GeodePrimitive2D p2D;
 
@@ -137,14 +137,14 @@ inline GeodePrimitive2D& Geode3DObject::project_primitive( GeodeVertex& v1, Geod
 
 inline GeodePrimitive2D& Geode3DObject::project_primitive( GeodePrimitive3D& P3D )
 {
-	geode_trace( "Geode3DObject::project_primitive( P3D )\n" );
+	g_trace( "Geode3DObject::project_primitive( P3D )\n" );
 
 	return project_primitive( P3D.v1, P3D.v2, P3D.v3 );
 }
 
 void Geode3DObject::render( GeodeGraphicalContext& ggc )
 {	
-	geode_trace( "Geode3DObject::render( ggc )\n" );
+	g_trace( "Geode3DObject::render( ggc )\n" );
 
 	/*Z_sort_primitives();*/
 
@@ -168,7 +168,7 @@ void Geode3DObject::render( GeodeGraphicalContext* ggc )
 
 void Geode3DObject::save( const char * szFileName )
 {
-	geode_trace( "Geode3DObject::save( %s )\n", szFileName );
+	g_trace( "Geode3DObject::save( %s )\n", szFileName );
 
 	FILE * fd = fopen( szFileName, "w+b" );
 

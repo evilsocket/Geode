@@ -24,7 +24,7 @@ namespace GEngine
 
 GeodeMatrix Geode3DMath::rotation_matrix( int x, int y, int z, double angle )
 {
-	geode_trace( "Geode3DMath::rotation_matrix( %d, %d, %d, %f )\n", x, y, z, angle );
+	g_trace( "Geode3DMath::rotation_matrix( %d, %d, %d, %f )\n", x, y, z, angle );
 
 	double X,Y,Z,W;
 
@@ -62,7 +62,7 @@ GeodeMatrix Geode3DMath::rotation_matrix( int x, int y, int z, double angle )
 
 GeodeMatrix Geode3DMath::distance_vector( int dx, int dy, int dz )
 {
-	geode_trace( "Geode3DMath::distance_vector( %d, %d, %d )\n", dx, dy, dz );
+	g_trace( "Geode3DMath::distance_vector( %d, %d, %d )\n", dx, dy, dz );
 
 	return GeodeMath::vector(3, dx, dy, dz );
 }

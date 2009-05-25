@@ -43,9 +43,9 @@ namespace GEngine
 //#define GEODE_DEBUG
 
 #ifdef GEODE_DEBUG
-#	define geode_trace printf
+#	define g_trace printf
 #else
-#	define geode_trace //
+#	define g_trace //
 #endif
 
 typedef unsigned char gcolor_t;
@@ -354,6 +354,8 @@ class Geode3DObject : public GeodeObject
 		void save( const char * szFileName );
 };
 
+class GeodeEventReceiver;
+
 class GeodeGraphicalContext
 {
 	private :
@@ -365,6 +367,13 @@ class GeodeGraphicalContext
 		Display           *m_display;
 		GC				   m_gc;
 		Window             m_window;
+		unsigned long 	   m_white,
+						   m_black;
+		Colormap           m_colormap;
+		XFontStruct		  *m_font;
+		Pixmap			   m_pixmap;
+		
+		GeodeEventReceiver * m_event_reciever;
 		
 		GeodeFrameBuffer * m_buffer;
 		
@@ -372,12 +381,15 @@ class GeodeGraphicalContext
 		
 	public  :
 
-		//GeodeGraphicalContext( const char * title, int width, int height, WNDPROC wndProc, int style = WS_OVERLAPPEDWINDOW );
-		GeodeGraphicalContext( Window * wnd );
+		GeodeGraphicalContext( const char * title, 
+							   int width, 
+							   int height, 
+							   GeodeEventReceiver *eventReciever );
+		//GeodeGraphicalContext( Window * wnd );
 				
 		~GeodeGraphicalContext();
 
-		int style;
+		//int style;
 
 		void allocate( int width, int height, int depth );
 

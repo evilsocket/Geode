@@ -21,80 +21,83 @@
 
 namespace GEngine
 {
-/*
-DWORD WINAPI GeodeGraphicalContext::msg_dispatch_thread( LPVOID lpParam )
-{
-	geode_trace( "GeodeGraphicalContext::msg_dispatch_thread( 0x%X )\n", lpParam );
 
-	GeodeGraphicalContext * pGGC = (GeodeGraphicalContext *)lpParam;
-
-	CLIENTCREATESTRUCT ccs;
-
-	pGGC->hwnd() = ::CreateWindowA( "MDICLIENT",
-					  				 pGGC->title(),
-									 pGGC->style | WS_VISIBLE ,
-									 pGGC->width() / 2,
-									 pGGC->height() / 2,
-									 pGGC->width(),
-									 pGGC->height(),
-									 0,
-									 0,
-									 0,
-									 &ccs
-									);
-
-	if( !pGGC->hwnd() )
-	{
-		throw new GeodeException( "Invalid window handle" );
-		return 0;
-	}
-
-	pGGC->hdc() = ::GetDC(pGGC->hwnd());
-
-	if( !pGGC->hdc() )
-	{
-		throw new GeodeException( "Invalid device context handle" );
-		return 0;
-	}
-
-	pGGC->allocate( pGGC->width(), pGGC->height(), 4 );
-
-	::ShowWindow( pGGC->hwnd(), SW_SHOW);
-	::UpdateWindow( pGGC->hwnd() );
-
-	::SetWindowLong( pGGC->hwnd(), GWL_WNDPROC, (LONG)pGGC->wndproc() );
-
-	if( pGGC->style == WS_POPUP )
-	{
-		::SetWindowPos( pGGC->hwnd(), 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER );
-	}
-
-	if( ::SetEvent( pGGC->ready_event() ) == 0 )
-	{
-		throw new GeodeException( "Cannot set synchronization event" );
-		return 0;
-	}
-
-	MSG msg;
-
-	while( GetMessage(&msg,0,0,0) )
-	{
-		DispatchMessage ( &msg );
-	}
-
-	if( ::SetEvent( pGGC->destroy_event() ) == 0 )
-	{
-		throw new GeodeException( "Cannot set destroy event" );
-		return 0;
-	}
-
-	return 0;
+void * GeodeGraphicalContext::msg_dispatch_thread( void *arg ){
+	g_trace( "GeodeGraphicalContext::msg_dispatch_thread( 0x%X )\n", arg );
+	
+	GeodeGraphicalContext * ggc = (GeodeGraphicalContext *)arg;
+	
+	
 }
-*/
+
+GeodeGraphicalContext::GeodeGraphicalContext( const char * title, int width, int height, GeodeEventReceiver *eventReciever ){
+	g_trace( "GeodeGraphicalContext::GeodeGraphicalContext( %s, %d, %d, 0x%X )\n", title, width, height, eventReciever );
+	
+	char *fontname;
+	XGCValues gcv;
+	XSizeHints hints;
+	XColor xcolor;
+	Cursor cursor;
+	
+	strcpy( m_title, title ? title : "Geode Graphical Context Display" );
+	m_width          = width;
+	m_height         = height;
+	m_event_reciever = eventReciever;
+	
+	if( (m_display = XOpenDisplay(NULL)) == NULL ){
+		throw new GeodeException( "Cannot open default X display" );
+		return;
+	}
+	
+	if( (fontname = XGetDefault( m_display, "", "font")) == NULL ){
+		fontname = "fixed";	
+	}
+	if( (m_font = XLoadQueryFont( m_display, fontname ) ) == NULL ){
+		throw new GeodeException( "Cannot load default font" );
+		return;
+	}
+	
+	m_white = WhitePixel( m_display, DefaultScreen(m_display) );
+	m_black = BlackPixel( m_display, DefaultScreen(m_display) );
+	
+	hints.flags       = (USPosition | PSize | PMinSize | PMaxSize);
+	hints.height      = height;
+	hints.width       = width;
+	hints.base_height = height;
+	hints.base_width  = width;
+	hints.min_height  = height;
+	hints.min_width   = width;
+	hints.max_height  = height;
+	hints.max_width   = width;
+	// TODO: Get x-y position from args
+	hints.x           = 0;
+	hints.y           = 0;
+
+	m_window   = XCreateSimpleWindow( m_display, RootWindow(m_display,0), 0, 0, width, height, 1, m_black, m_ white );
+	m_colormap = DefaultColormap( m_display, DefaultScreen(m_display) );
+		
+	XSetNormalHints( m_display, m_window, &hints );
+	XStoreName( m_display, m_window, title );
+	XSynchronize( m_display, 1 );
+
+	m_pixmap = XCreatePixmap( m_display, m_window, m_width, m_height,
+							  DefaultDepth( m_display, DefaultScreen(m_display) );
+	m_gc     = XCreateGC( m_display, m_pixmap, 0, (XGCValues *)0 );						  
+	cursor   = XCreateFontCursor( m_display, XC_crosshair );
+	XDefineCursor( m_display, m_window, cursor );
+	
+	XSelectInput( m_display, m_window, ExposureMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | PointerMotionHintMask );
+	
+	XMapRaised( m_display, m_window );
+	XSetWindowBackgroundPixmap( m_display, m_window, m_pixmap );
+
+	pthread_t tid;
+	pthread_create( &tid, NULL, msg_dispatch_thread, (void *)this );
+}
 
 GeodeGraphicalContext::GeodeGraphicalContext( const char * title, int width, int height, WNDPROC wndProc, int style /*= WS_OVERLAPPEDWINDOW*/ )
 {
-	geode_trace( "GeodeGraphicalContext::GeodeGraphicalContext( %s, %d, %d, 0x%X, %d )\n", title, width, height, wndProc, style );
+	g_trace( "GeodeGraphicalContext::GeodeGraphicalContext( %s, %d, %d, 0x%X, %d )\n", title, width, height, wndProc, style );
 	this->style = style;
 
 	m_ready_event   = ::CreateEvent( 0, FALSE, FALSE, 0 );
@@ -128,10 +131,10 @@ GeodeGraphicalContext::GeodeGraphicalContext( const char * title, int width, int
 
 	::WaitForSingleObject( m_ready_event, INFINITE );
 }
-
+/*
 GeodeGraphicalContext::GeodeGraphicalContext( HWND hwnd )
 {
-	geode_trace( "GeodeGraphicalContext::GeodeGraphicalContext( 0x%X )\n", hwnd );
+	g_trace( "GeodeGraphicalContext::GeodeGraphicalContext( 0x%X )\n", hwnd );
 
 	if( !hwnd )
 	{
@@ -173,17 +176,18 @@ GeodeGraphicalContext::GeodeGraphicalContext( HWND hwnd )
 	m_bmpinfo.bmiHeader.biClrUsed	    = 0;
 	m_bmpinfo.bmiHeader.biClrImportant  = 0;
 }
+*/
 
 GeodeGraphicalContext::~GeodeGraphicalContext()
 {
-	geode_trace( "GeodeGraphicalContext::~GeodeGraphicalContext()\n" );
+	g_trace( "GeodeGraphicalContext::~GeodeGraphicalContext()\n" );
 
 	delete m_buffer;
 }
 
 void GeodeGraphicalContext::allocate( int width, int height, int depth )
 {
-	geode_trace( "GeodeGraphicalContext::allocate( %d, %d, %d )\n", width, height, depth );
+	g_trace( "GeodeGraphicalContext::allocate( %d, %d, %d )\n", width, height, depth );
 
 	m_buffer = new GeodeFrameBuffer( width, height, depth );
 }
@@ -235,14 +239,14 @@ inline GeodeFrameBuffer * GeodeGraphicalContext::buffer()
 
 void GeodeGraphicalContext::render( GeodeObject& obj, gcolor_t * color )
 {
-	geode_trace( "GeodeGraphicalContext::render( obj, color )\n" );
+	g_trace( "GeodeGraphicalContext::render( obj, color )\n" );
 
 	obj.render(this);
 }
 
 void GeodeGraphicalContext::update()
 {
-	//geode_trace( "GeodeGraphicalContext::update()\n" );
+	//g_trace( "GeodeGraphicalContext::update()\n" );
 
 	int ret;
 
@@ -267,13 +271,13 @@ void GeodeGraphicalContext::update()
 }
 
 void GeodeGraphicalContext::wait( unsigned int ms ) {
-	geode_trace( "GeodeGraphicalContext::wait( %d )\n", ms );
+	g_trace( "GeodeGraphicalContext::wait( %d )\n", ms );
 	sleep(ms);
 }
 
 GeodeGraphicalContext& GeodeGraphicalContext::resize( int width, int height, bool redraw /*= true*/, bool resize_buffer /*= true*/ )
 {
-	geode_trace( "GeodeGraphicalContext::resize( %d, %d, %d, %d )\n", width, height, redraw, resize_buffer );
+	g_trace( "GeodeGraphicalContext::resize( %d, %d, %d, %d )\n", width, height, redraw, resize_buffer );
 
 	m_width  = width;
 	m_height = height;
