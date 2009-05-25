@@ -28,6 +28,10 @@
 #include <memory.h>
 #include <vector>
 #include <algorithm>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/X.h>
+#include <X11/cursorfont.h>
 
 using namespace std;
 
@@ -66,81 +70,6 @@ static GEODE_DEFINE_COLOR( BLACK, 0x00, 0x00, 0x00 );
 
 #define GEODE_MAX(a,b,c) (a>b?(a>c?a:c):(b>c?b:c))
 #define GEODE_MIN(a,b,c) (a<b?(a<c?a:c):(b<c?b:c))
-
-#define GK_ESC        27
-#define GK_F1         112
-#define GK_F2         113
-#define GK_F3         114
-#define GK_F4         115
-#define GK_F5         116
-#define GK_F6         117
-#define GK_F7         118
-#define GK_F8         119
-#define GK_F9         120
-#define GK_F10        121
-#define GK_F11        122
-#define GK_F12        123
-#define GK_PAUSE      19
-#define GK_1          49
-#define GK_2          50
-#define GK_3          51
-#define GK_4          52
-#define GK_5          53
-#define GK_6          54
-#define GK_7          55
-#define GK_8          56
-#define GK_9          57
-#define GK_0          48
-#define GK_BACKSPACE  8
-#define GK_INSERT     45
-#define GK_HOME       36
-#define GK_PAGEUP     33
-#define GK_TAB        9
-#define GK_Q          81
-#define GK_W          87
-#define GK_E          69
-#define GK_R          82
-#define GK_T          84
-#define GK_Y          89
-#define GK_U          85
-#define GK_I          73
-#define GK_O          79
-#define GK_P          80
-#define GK_DELETE     8
-#define GK_END        35
-#define GK_PAGEDOWN   34
-#define GK_CAPSLOCK   20
-#define GK_A          65
-#define GK_S          83
-#define GK_D          68
-#define GK_F          70
-#define GK_G          71
-#define GK_H          72
-#define GK_J          74
-#define GK_K          75
-#define GK_L          76
-#define GK_ENTER      13
-#define GK_SHIFTLEFT  16
-#define GK_Z          90
-#define GK_X          88
-#define GK_C          67
-#define GK_V          86
-#define GK_B          66
-#define GK_N          78
-#define GK_M          77
-#define GK_SHIFTRIGHT 16
-#define GK_CTRLLEFT   17
-#define GK_APPLEFT    91
-#define GK_SPACE      32
-#define GK_ALTGR      17
-#define GK_APPRIGHT   92
-#define GK_MENU       93
-#define GK_CTRLRIGHT  17
-#define GK_ARROWLEFT  37
-#define GK_ARROWUP    38
-#define GK_ARROWRIGHT 39
-#define GK_ARROWDOWN  40
-
 
 #define G_PI 3.14159265358979323846
 
@@ -267,10 +196,6 @@ class GeodeHardware
 {
 	public :
 
-		// convert a virtual key to its ascii code
-		static char   vkeytoascii( int vkey, int scancode );
-		// change the scree resolution
-		static void   set_screen_resolution( int width, int height );
 		// get the in-use screen name
 		static char * get_screen_name();
 		// get the in-use screen bit depth
@@ -324,7 +249,7 @@ class GeodeFrameBuffer
 
 		void load_bmp( const char * filename, bool resize = true, int x0 = 0, int y0 = 0 );
 
-		void load_font_resource( int index, HMODULE hmod = 0, int w = 8, int h = 13, int d = 3 );
+		// TODO void load_font_resource( int index, HMODULE hmod = 0, int w = 8, int h = 13, int d = 3 );
 
 		gcolor_t&         operator () ( int x, int y, int color );
 		gcolor_t&         operator () ( int x , int y , int z , int v );
@@ -354,11 +279,13 @@ class GeodeFrameBuffer
 		GeodeFrameBuffer& circle    ( int x , int y,  int r,  gcolor_t * color );		
 
 		GeodeFrameBuffer& primitive	( GeodePrimitive2D& pr, gcolor_t * color );
-
+		
+		/* TODO
 		GeodeFrameBuffer& text		( int x, int y, gcolor_t * fcolor, gcolor_t * bcolor, char * text );
 		GeodeFrameBuffer& printf	( int x, int y, gcolor_t * fcolor, gcolor_t * bcolor, char * format, ... );
 		GeodeFrameBuffer& printf	( int x, int y, char * format, ... );
-
+		*/
+		
 		GeodeFrameBuffer& resize	( int width, int height, int depth );
 
 		GeodeFrameBuffer  get_portion( int x0, int y0, int x1, int y1 );

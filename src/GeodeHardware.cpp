@@ -22,69 +22,36 @@
 namespace GEngine
 {
 
-char GeodeHardware::vkeytoascii( int vkey, int scancode )
-{
-	BYTE keyStateArr[256];
-	WORD word;
-	char ch;
-
-	GetKeyboardState(keyStateArr);
-	ToAscii(vkey, scancode, keyStateArr, &word, 0);
-	ch = (char) word;
-   
-	if ((GetKeyState(VK_SHIFT) & 0x8000) && vkey >= 'a' && vkey <= 'z')
-		ch += 'A'-'a';
-
-	return ch;
+int GeodeHardware::get_screen_width() {
+	Display *d;
+	int width;
+	
+	d = XOpenDisplay(NULL);
+	width = DisplayWidth( d, DefaultScreen(d);	
+	XCloseDisplay(d);
+	
+	return width;
 }
 
-void GeodeHardware::set_screen_resolution( int width, int height )
-{
-	DEVMODE mode;
-	mode.dmSize = sizeof(DEVMODE);
-	mode.dmDriverExtra = 0;
-	EnumDisplaySettings(0,ENUM_CURRENT_SETTINGS,&mode);
-
-	mode.dmPelsWidth  = width;
-	mode.dmPelsHeight = height;
-
-	::ChangeDisplaySettings( &mode, 0 );
+int GeodeHardware::get_screen_height() {
+	Display *d;
+	int height;
+	
+	d = XOpenDisplay(NULL);
+	height = DisplayHeight( d, DefaultScreen(d);	
+	XCloseDisplay(d);
+	
+	return height;
 }
 
-int GeodeHardware::get_screen_width()
-{
-	DEVMODE mode;
-	mode.dmSize = sizeof(DEVMODE);
-	mode.dmDriverExtra = 0;
-	EnumDisplaySettings(0,ENUM_CURRENT_SETTINGS,&mode);
-	return mode.dmPelsWidth;
+int GeodeHardware::get_screen_depth() {
+	/* TODO */
+	return 3; 
 }
 
-int GeodeHardware::get_screen_height()
-{
-	DEVMODE mode;
-	mode.dmSize = sizeof(DEVMODE); 
-	mode.dmDriverExtra = 0;
-	EnumDisplaySettings(0,ENUM_CURRENT_SETTINGS,&mode);
-	return mode.dmPelsHeight; 
-}
-
-int GeodeHardware::get_screen_depth()
-{
-	DEVMODE mode;
-	mode.dmSize = sizeof(DEVMODE); 
-	mode.dmDriverExtra = 0;
-	EnumDisplaySettings(0,ENUM_CURRENT_SETTINGS,&mode);
-	return mode.dmBitsPerPel; 
-}
-
-char * GeodeHardware::get_screen_name()
-{
-	DEVMODE mode;
-	mode.dmSize = sizeof(DEVMODE); 
-	mode.dmDriverExtra = 0;
-	EnumDisplaySettings(0,ENUM_CURRENT_SETTINGS,&mode);
-	return (char *)mode.dmDeviceName; 
+char * GeodeHardware::get_screen_name() {
+	/* TODO */
+	return strdup( "0:0" );
 }
 
 }

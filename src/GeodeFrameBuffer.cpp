@@ -22,36 +22,30 @@
 namespace GEngine
 {
 
-inline int GeodeFrameBuffer::offset( int x, int y )
-{ 
+inline int GeodeFrameBuffer::offset( int x, int y ) { 
 	return (x + m_width * y) * m_depth; 
 }
 
-inline int GeodeFrameBuffer::offset( int x, int y, int color )
-{ 
+inline int GeodeFrameBuffer::offset( int x, int y, int color ) { 
 	return color + offset(x,y); 
 }
 
-inline int GeodeFrameBuffer::offset( int x, int y, int z, int v )
-{
+inline int GeodeFrameBuffer::offset( int x, int y, int z, int v ) {
 	return x + y*m_width + z*m_width*m_height + v*m_width*m_height*m_depth;
 }
 
-inline bool GeodeFrameBuffer::is_valid_offset( int offset )
-{
+inline bool GeodeFrameBuffer::is_valid_offset( int offset ) {
 	return (offset < m_size && offset >= 0);
 }
 
-inline void GeodeFrameBuffer::set_color( int x, int y,gcolor_t * color )
-{
+inline void GeodeFrameBuffer::set_color( int x, int y,gcolor_t * color ) {
 	int off = offset(x,y);
 
 	if( is_valid_offset(off) )
 		memcpy( m_data_ptr + off, color, m_depth );
 }
 
-GeodeFrameBuffer::GeodeFrameBuffer( int width, int heigth, int depth /* = 3 */ )
-{
+GeodeFrameBuffer::GeodeFrameBuffer( int width, int heigth, int depth /* = 3 */ ) {
 	m_width       = width;
 	m_height      = heigth;
 	m_depth       = depth;
@@ -60,8 +54,7 @@ GeodeFrameBuffer::GeodeFrameBuffer( int width, int heigth, int depth /* = 3 */ )
 	m_shared_data = false;
 }
 
-GeodeFrameBuffer::GeodeFrameBuffer( GeodeFrameBuffer& gFrameBuffer ) 
-{
+GeodeFrameBuffer::GeodeFrameBuffer( GeodeFrameBuffer& gFrameBuffer ) {
 	m_width       = 0;
 	m_height      = 0;
 	m_depth       = 0;
@@ -72,25 +65,21 @@ GeodeFrameBuffer::GeodeFrameBuffer( GeodeFrameBuffer& gFrameBuffer )
 	swap(gFrameBuffer);
 }
 
-GeodeFrameBuffer::~GeodeFrameBuffer()
-{
+GeodeFrameBuffer::~GeodeFrameBuffer() {
 	if( !m_shared_data )
 		if( m_size > 3 )
 			free( m_data_ptr );
 }
 
-GeodeFrameBuffer::iterator GeodeFrameBuffer::begin()
-{
+GeodeFrameBuffer::iterator GeodeFrameBuffer::begin() {
 	return m_data_ptr;
 }
 
-GeodeFrameBuffer::iterator GeodeFrameBuffer::end()
-{
+GeodeFrameBuffer::iterator GeodeFrameBuffer::end() {
 	return m_data_ptr + m_size;
 }
 
-inline void GeodeFrameBuffer::swap( GeodeFrameBuffer& gFrameBuffer )
-{
+inline void GeodeFrameBuffer::swap( GeodeFrameBuffer& gFrameBuffer ) {
 	if( !m_shared_data )
 		if( m_size > 3 )
 			free( m_data_ptr );
@@ -105,8 +94,7 @@ inline void GeodeFrameBuffer::swap( GeodeFrameBuffer& gFrameBuffer )
 	memcpy( m_data_ptr, gFrameBuffer.data(), m_size );
 }
 
-void GeodeFrameBuffer::load_bmp( const char * filename, bool resize/* = true*/, int x0/* = 0*/, int y0/* = 0*/ )
-{
+void GeodeFrameBuffer::load_bmp( const char * filename, bool resize/* = true*/, int x0/* = 0*/, int y0/* = 0*/ ) {
 	CBmp bmp;
 
 	bmp.load(filename);
@@ -121,10 +109,8 @@ void GeodeFrameBuffer::load_bmp( const char * filename, bool resize/* = true*/, 
 
 	int off = 0;
 
-	for( x = 0; x < width; x++ )
-	{
-		for( y = 0; y < height; y++ )
-		{
+	for( x = 0; x < width; x++ ) {
+		for( y = 0; y < height; y++ ) {
 			newbuffer(x,y,0) = prgbdata[x][y].Blue;
 			newbuffer(x,y,1) = prgbdata[x][y].green;
 			newbuffer(x,y,2) = prgbdata[x][y].Red;
@@ -137,86 +123,31 @@ void GeodeFrameBuffer::load_bmp( const char * filename, bool resize/* = true*/, 
 		set_portion( x0, y0, x0 + width, y0 + height, newbuffer );
 }
 
-void GeodeFrameBuffer::load_font_resource( int index, HMODULE hmod, int w /*= 8*/, int h /*= 13*/, int d /*= 3*/ )
-{
-	HMODULE mod  = hmod ? hmod : ::GetModuleHandleA("geode.dll");
-	HBITMAP hbmp = ::LoadBitmap( (HINSTANCE)mod, MAKEINTRESOURCE(index) ); 
+/* TODO
+void GeodeFrameBuffer::load_font_resource( int index, HMODULE hmod, int w , int h , int d ) {
 
-	BITMAPINFO bmi;
-
-	bmi.bmiHeader.biSize		  = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth		  = w;
-	bmi.bmiHeader.biHeight		  = -h;
-	bmi.bmiHeader.biPlanes		  = 1;
-	bmi.bmiHeader.biBitCount	  = 8 * d;
-	bmi.bmiHeader.biCompression	  = BI_RGB;
-	bmi.bmiHeader.biSizeImage	  = 0;
-	bmi.bmiHeader.biXPelsPerMeter = 1;
-	bmi.bmiHeader.biYPelsPerMeter = 1;
-	bmi.bmiHeader.biClrUsed		  = 0;
-	bmi.bmiHeader.biClrImportant  = 0;
-
-	gcolor_t * bits = new gcolor_t[ w * h * d ];
-
-	int ret = ::GetDIBits( GetDC( GetActiveWindow() ), 
-					  	   hbmp, 
-						   0,
-						   h,
-						   bits,
-						   &bmi,
-						   DIB_RGB_COLORS
-					      );
-
-	::DeleteObject(hbmp);
-
-	GeodeFrameBuffer newbuffer( w, h, depth() );
-
-	int x,
-	    y,
-		off = 0;
-
-	for( x = 0; x < w; x++ )
-	{
-		for( y = 0; y < h; y++ )
-		{
-			off = (x + w * y) * d;
-
-			newbuffer(x,y,0) = bits[off + 0];
-			newbuffer(x,y,1) = bits[off + 1];
-			newbuffer(x,y,2) = bits[off + 2];
-		}
-	}
-
-	delete[] bits;
-	
-	swap(newbuffer);
 }
+*/
 
-inline gcolor_t& GeodeFrameBuffer::operator () ( int x, int y, int color )
-{ 
+inline gcolor_t& GeodeFrameBuffer::operator () ( int x, int y, int color ) { 
 	return m_data_ptr[offset(x,y) + color]; 
 }
 
-inline gcolor_t& GeodeFrameBuffer::operator () ( int x , int y , int z , int v )
-{
+inline gcolor_t& GeodeFrameBuffer::operator () ( int x , int y , int z , int v ) {
 	return m_data_ptr[ offset(x,y,z,v) ];
 }
 
-inline gcolor_t& GeodeFrameBuffer::operator [] ( int offset )			 
-{ 
+inline gcolor_t& GeodeFrameBuffer::operator [] ( int offset ) { 
 	return m_data_ptr[offset]; 
 }
 
-inline GeodeFrameBuffer& GeodeFrameBuffer::operator = ( GeodeFrameBuffer& gFrameBuffer ) 
-{
+inline GeodeFrameBuffer& GeodeFrameBuffer::operator = ( GeodeFrameBuffer& gFrameBuffer )  {
 	swap(gFrameBuffer);
 	return *this;
 }
 
-inline GeodeFrameBuffer& GeodeFrameBuffer::operator *= ( GeodeFrameBuffer& gFrameBuffer )
-{
-	if( width() != gFrameBuffer.height() || depth() != gFrameBuffer.depth() )
-	{
+inline GeodeFrameBuffer& GeodeFrameBuffer::operator *= ( GeodeFrameBuffer& gFrameBuffer ) {
+	if( width() != gFrameBuffer.height() || depth() != gFrameBuffer.depth() ) {
 		throw new GeodeException( 0, "Height and width must be the same size for matrix multiplication" );
 		return *this;
 	}
@@ -225,14 +156,10 @@ inline GeodeFrameBuffer& GeodeFrameBuffer::operator *= ( GeodeFrameBuffer& gFram
     
 	gcolor_t val;
 
-	for( int x = 0; x < result.width(); x++ )
-	{
-		for( int y = 0; y < result.height(); y++ )
-		{
+	for( int x = 0; x < result.width(); x++ ) {
+		for( int y = 0; y < result.height(); y++ ) {
 			val = 0; 
-			
-			for( int k = 0; k < width(); k++ )
-			{
+			for( int k = 0; k < width(); k++ ) {
 				val += (*this)(k,y,0) * gFrameBuffer(x,k,0);
 			}
 
@@ -245,30 +172,26 @@ inline GeodeFrameBuffer& GeodeFrameBuffer::operator *= ( GeodeFrameBuffer& gFram
 	return *this;
 }
 
-inline GeodeFrameBuffer GeodeFrameBuffer::operator * ( GeodeFrameBuffer& gFrameBuffer )
-{
+inline GeodeFrameBuffer GeodeFrameBuffer::operator * ( GeodeFrameBuffer& gFrameBuffer ) {
 	GeodeFrameBuffer gfb1( *this );
 
 	return (gfb1 *= gFrameBuffer);
 }
 
-inline GeodeFrameBuffer& GeodeFrameBuffer::operator *= ( double d )
-{
+inline GeodeFrameBuffer& GeodeFrameBuffer::operator *= ( double d ) {
 	for( int i = 0; i < m_size; i++ )
 		m_data_ptr[i] *= d;
 
 	return *this;
 }
 
-inline GeodeFrameBuffer GeodeFrameBuffer::operator * ( double d )
-{
+inline GeodeFrameBuffer GeodeFrameBuffer::operator * ( double d ) {
 	GeodeFrameBuffer gfb1( *this );
 
 	return (gfb1 *= d);
 }
 
-inline GeodeFrameBuffer& GeodeFrameBuffer::operator += ( GeodeFrameBuffer& gFrameBuffer )
-{
+inline GeodeFrameBuffer& GeodeFrameBuffer::operator += ( GeodeFrameBuffer& gFrameBuffer ) {
 	int smin = size() < gFrameBuffer.size() ? size() : gFrameBuffer.size();
     
 	gcolor_t *ptrs = gFrameBuffer.data() + smin,
@@ -279,21 +202,17 @@ inline GeodeFrameBuffer& GeodeFrameBuffer::operator += ( GeodeFrameBuffer& gFram
 	return *this;
 }
 
-inline GeodeFrameBuffer GeodeFrameBuffer::operator + ( GeodeFrameBuffer& gFrameBuffer )
-{
+inline GeodeFrameBuffer GeodeFrameBuffer::operator + ( GeodeFrameBuffer& gFrameBuffer ) {
 	GeodeFrameBuffer gfb1( *this );
 
 	return (gfb1 += gFrameBuffer);
 }
 
-inline GeodeFrameBuffer& GeodeFrameBuffer::operator += ( gcolor_t uc )
-{
+inline GeodeFrameBuffer& GeodeFrameBuffer::operator += ( gcolor_t uc ) {
 	int i;
 
-	for( i = 0; i < m_size; i++ )
-	{
+	for( i = 0; i < m_size; i++ ) {
 		m_data_ptr[i] += uc;
-
 		if( m_data_ptr[i] < 0 )
 			m_data_ptr[i] = 0xFF;
 	}
@@ -301,45 +220,37 @@ inline GeodeFrameBuffer& GeodeFrameBuffer::operator += ( gcolor_t uc )
 	return *this;
 }
 
-inline GeodeFrameBuffer GeodeFrameBuffer::operator + ( gcolor_t uc )
-{
+inline GeodeFrameBuffer GeodeFrameBuffer::operator + ( gcolor_t uc ) {
 	GeodeFrameBuffer gfb1( *this );
 
 	return (gfb1 += uc);
 }
 
-inline int GeodeFrameBuffer::width() 
-{ 
+inline int GeodeFrameBuffer::width() { 
 	return m_width;  
 }
 
-inline int GeodeFrameBuffer::height()
-{ 
+inline int GeodeFrameBuffer::height() { 
 	return m_height; 
 }
 
-inline int GeodeFrameBuffer::depth() 
-{ 
+inline int GeodeFrameBuffer::depth() { 
 	return m_depth;  
 }
 
-inline int GeodeFrameBuffer::size()  
-{ 
+inline int GeodeFrameBuffer::size() { 
 	return m_size;   
 }
 
-inline gcolor_t * GeodeFrameBuffer::data()  
-{ 
+inline gcolor_t * GeodeFrameBuffer::data() { 
 	return m_data_ptr; 
 }
 
-inline bool GeodeFrameBuffer::shared()
-{
+inline bool GeodeFrameBuffer::shared() {
 	return m_shared_data; 
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::line( int x0, int y0, int x1, int y1, gcolor_t * color )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::line( int x0, int y0, int x1, int y1, gcolor_t * color ) {
 	int i,
 		dx    = x1 - x0,	   /* the horizontal distance of the line */
 		dy    = y1 - y0,	   /* the vertical distance of the line */
@@ -352,37 +263,25 @@ GeodeFrameBuffer& GeodeFrameBuffer::line( int x0, int y0, int x1, int y1, gcolor
 		px    = x0,
 		py    = y0;
 
-	if( dxabs >= dyabs ) /* the line is more horizontal than vertical */
-	{
-		for( i = 0; i < dxabs; i++ )
-		{
+	if( dxabs >= dyabs ) { /* the line is more horizontal than vertical */
+		for( i = 0; i < dxabs; i++ ) {
 			y += dyabs;
-
-			if (y >= dxabs)
-			{
+			if (y >= dxabs) {
 				y  -= dxabs;
 				py += sdy;
 			}
-
 			px += sdx;
-
 			set_color(px,py,color);
 		}
 	}
-	else /* the line is more vertical than horizontal */
-	{
-		for( i = 0; i < dyabs; i++ )
-		{
+	else { /* the line is more vertical than horizontal */
+		for( i = 0; i < dyabs; i++ ) {
 			x += dxabs;
-
-			if( x >= dyabs )
-			{
+			if( x >= dyabs ) {
 				x  -= dyabs;
 				px += sdx;
 			}
-
 			py += sdy;
-			
 			set_color(px,py,color);
 		}
 	}
@@ -390,8 +289,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::line( int x0, int y0, int x1, int y1, gcolor
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::rectangle( int x0, int y0, int x1, int y1, gcolor_t * color )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::rectangle( int x0, int y0, int x1, int y1, gcolor_t * color ) {
 	line( x0 , y0 , x1 , y0 , color );
 	line( x1 , y0 , x1 , y1 , color );
 	line( x1 , y1 , x0 , y1 , color );
@@ -400,8 +298,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::rectangle( int x0, int y0, int x1, int y1, g
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::fill( gcolor_t * color )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::fill( gcolor_t * color ) {
 	int i ;
 	
 	for( i = 0; i < m_size; i += m_depth )
@@ -410,15 +307,12 @@ GeodeFrameBuffer& GeodeFrameBuffer::fill( gcolor_t * color )
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::clear()
-{
+GeodeFrameBuffer& GeodeFrameBuffer::clear() {
 	memset( m_data_ptr, 0, m_size );
-
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::circle( int x , int y,  int r,  gcolor_t * color )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::circle( int x , int y,  int r,  gcolor_t * color ) {
     /*
 		Distance x to eighth of circle (about which circle is symmetric).
        'Roof' guarantees that we do not miss parts of circle on approximation.
@@ -428,8 +322,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::circle( int x , int y,  int r,  gcolor_t * c
     int xx      ( 0     ); // x at center.
     int yy      ( r     ); // y above center.
 
-    while( xx <= eighth_x ) 
-	{
+    while( xx <= eighth_x ) {
         // Deduce 8 points from circle symmetry.
         int x_plus__xx( x + xx );
         int x_minus_xx( x - xx );
@@ -454,8 +347,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::circle( int x , int y,  int r,  gcolor_t * c
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::primitive( GeodePrimitive2D& pr, gcolor_t * color )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::primitive( GeodePrimitive2D& pr, gcolor_t * color ) {
 	line( pr.p1.x, pr.p1.y, pr.p2.x, pr.p2.y, color );
 	line( pr.p2.x, pr.p2.y, pr.p3.x, pr.p3.y, color );
 	line( pr.p3.x, pr.p3.y, pr.p1.x, pr.p1.y, color );
@@ -463,8 +355,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::primitive( GeodePrimitive2D& pr, gcolor_t * 
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::resize( int width, int height, int depth )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::resize( int width, int height, int depth ) {
 	if( !m_shared_data )
 		if( m_size > 3 )
 			free( m_data_ptr );
@@ -479,94 +370,22 @@ GeodeFrameBuffer& GeodeFrameBuffer::resize( int width, int height, int depth )
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::text( int x, int y, gcolor_t * fcolor, gcolor_t * bcolor, char * text )
-{
-	int txtlen = strlen(text);
-
-	int sx = x,
-		sy = y;
-
-	GeodeFrameBuffer fontmask(8,13,4);
-
-	for( int i = 0; i < txtlen; i++ )
-	{
-		switch(text[i])
-		{
-			case '\n' : 
-				
-				sx = x; 
-				sy += 13; 
-				break;
-			
-			case '\t' : 
-				
-				this->text( sx, sy, fcolor, bcolor, "    " ); 
-				sx += 32;  
-				break;
-
-			default : 
-
-				int FONT_RESOURCE_IDX = GEODE_CHAR_TO_FONT(text[i]);
-
-				fontmask.load_font_resource(FONT_RESOURCE_IDX);
-							
-				int mx,
-					my,
-					fx,
-					fy;
-
-				for( mx = sx, fx = 0; mx < sx + 8; mx++, fx++ )
-				{
-					for( my = sy, fy = 0; my < sy + 13; my++, fy++ )
-					{
-						if( fontmask(fx,fy,0) )
-						{
-							if( fcolor )
-								set_color(mx,my,fcolor);
-						}
-						else
-						{
-							if( bcolor )
-								set_color(mx,my,bcolor);
-						}
-					}
-				}
-				
-				sx += 8;
-		}
-	}
-
-	return *this;
+/*
+TODO
+GeodeFrameBuffer& GeodeFrameBuffer::text( int x, int y, gcolor_t * fcolor, gcolor_t * bcolor, char * text ) {
+	
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::printf( int x, int y, gcolor_t * fcolor, gcolor_t * bcolor, char * format, ... )
-{
-	char txt[0xFF];
+GeodeFrameBuffer& GeodeFrameBuffer::printf( int x, int y, gcolor_t * fcolor, gcolor_t * bcolor, char * format, ... ) {
 
-	va_list args;
-
-	va_start( args, format );
-		vsnprintf( txt, 0xFF, format, args );
-	va_end( args );
-
-	return text(x,y,fcolor,bcolor,txt);
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::printf( int x, int y, char * format, ... )
-{
-	char txt[0xFF];
+GeodeFrameBuffer& GeodeFrameBuffer::printf( int x, int y, char * format, ... ) {
 
-	va_list args;
-
-	va_start( args, format );
-		vsnprintf( txt, 0xFF, format, args );
-	va_end( args );
-
-	return text(x,y,0,0,txt);
 }
+*/
 
-GeodeFrameBuffer GeodeFrameBuffer::get_portion( int x0, int y0, int x1, int y1 )
-{
+GeodeFrameBuffer GeodeFrameBuffer::get_portion( int x0, int y0, int x1, int y1 ) {
 	GeodeFrameBuffer dest( x1 - x0, y1 - y0, m_depth );
 
 	int sx,
@@ -575,12 +394,9 @@ GeodeFrameBuffer GeodeFrameBuffer::get_portion( int x0, int y0, int x1, int y1 )
 		dy,
 		soff;
 	
-	for( sx = x0, dx = 0; sx != x1; sx++, dx++ )
-	{
-		for( sy = y0, dy = 0; sy != y1; sy++, dy++ )
-		{
+	for( sx = x0, dx = 0; sx != x1; sx++, dx++ ) {
+		for( sy = y0, dy = 0; sy != y1; sy++, dy++ ) {
 			soff = offset(sx,sy);
-
 			dest(dx,dy,0) = m_data_ptr[ soff + 0 ];
 			dest(dx,dy,1) = m_data_ptr[ soff + 1 ];
 			dest(dx,dy,2) = m_data_ptr[ soff + 2 ];
@@ -591,20 +407,16 @@ GeodeFrameBuffer GeodeFrameBuffer::get_portion( int x0, int y0, int x1, int y1 )
 }
 
 
-GeodeFrameBuffer& GeodeFrameBuffer::set_portion( int x0, int y0, int x1, int y1, GeodeFrameBuffer& gFrameBuffer )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::set_portion( int x0, int y0, int x1, int y1, GeodeFrameBuffer& gFrameBuffer ) {
 	int sx,
 		sy,
 		dx,
 		dy,
 		doff;
 	
-	for( sx = 0, dx = x0; dx != x1; sx++, dx++ )
-	{
-		for( sy = 0, dy = y0; dy != y1; sy++, dy++ )
-		{
+	for( sx = 0, dx = x0; dx != x1; sx++, dx++ ) {
+		for( sy = 0, dy = y0; dy != y1; sy++, dy++ ) {
 			doff = offset(dx,dy);
-
 			m_data_ptr[ doff + 0 ] = gFrameBuffer(sx,sy,0);
 			m_data_ptr[ doff + 1 ] = gFrameBuffer(sx,sy,1);
 			m_data_ptr[ doff + 2 ] = gFrameBuffer(sx,sy,2);
@@ -614,19 +426,16 @@ GeodeFrameBuffer& GeodeFrameBuffer::set_portion( int x0, int y0, int x1, int y1,
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::set_portion( int x0, int y0, GeodeFrameBuffer& gFrameBuffer )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::set_portion( int x0, int y0, GeodeFrameBuffer& gFrameBuffer ) {
 	return set_portion( x0, y0, x0 + gFrameBuffer.width(), y0 + gFrameBuffer.height(), gFrameBuffer );
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::normalize( gcolor_t& a, gcolor_t& b )
-{
+GeodeFrameBuffer& GeodeFrameBuffer::normalize( gcolor_t& a, gcolor_t& b ) {
 	gcolor_t min = 255, max = 0, clr = 0;
 	
 	int i;
 
-	for( i = 0; i < m_size; i++ )
-	{
+	for( i = 0; i < m_size; i++ ) {
 		clr = m_data_ptr[i];
 
 		if( clr < min )
@@ -642,8 +451,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::normalize( gcolor_t& a, gcolor_t& b )
 	return *this;
 }
 
-GeodeFrameBuffer& GeodeFrameBuffer::denoise()
-{
+GeodeFrameBuffer& GeodeFrameBuffer::denoise() {
 	float Ipp,
 		  Icp,
 		  Inp = 0.0,
@@ -664,10 +472,8 @@ GeodeFrameBuffer& GeodeFrameBuffer::denoise()
 
 	GeodeFrameBuffer mask(*this);
 
-	for( int k = 0; k < m_size; k++ )
-	{
-		for( y = 0, _py = 0, _ny = 1; _ny < m_height || y == --_ny; _py = y++, _ny++ )
-		{
+	for( int k = 0; k < m_size; k++ ){
+		for( y = 0, _py = 0, _ny = 1; _ny < m_height || y == --_ny; _py = y++, _ny++ ){
 			for( _nx = 1, _px = (int)( ( Icp = Ipp = (*this)(0,_py,0,k) ), 
 										   ( Icc = Ipc = (*this)(0,  y,0,k) ), 
 										   ( Icn = Ipn = (*this)(0,_ny,0,k))),
@@ -695,8 +501,7 @@ GeodeFrameBuffer& GeodeFrameBuffer::denoise()
 	return *this;
 }
 
-inline gcolor_t GeodeFrameBuffer::linear_interpolation( int x, int y, int color )
-{
+inline gcolor_t GeodeFrameBuffer::linear_interpolation( int x, int y, int color ) {
 	float fx = x < 0 ? 0 : x, 
 		  fy = y < 0 ? 0 : y;
 	
@@ -714,8 +519,7 @@ inline gcolor_t GeodeFrameBuffer::linear_interpolation( int x, int y, int color 
 	return (gcolor_t)(Icc + dx*(Inc-Icc + dy*(Icc+Inn-Icn-Inc)) + dy*(Icn-Icc));
 }
 
-inline gcolor_t * GeodeFrameBuffer::linear_interpolation( int x, int y )
-{
+inline gcolor_t * GeodeFrameBuffer::linear_interpolation( int x, int y ) {
 	gcolor_t * interpolation = new gcolor_t[ m_depth ];
 
 	int color;
@@ -726,18 +530,14 @@ inline gcolor_t * GeodeFrameBuffer::linear_interpolation( int x, int y )
 	return interpolation;
 }
 
-GeodeFrameBuffer GeodeFrameBuffer::linear_interpolation()
-{
+GeodeFrameBuffer GeodeFrameBuffer::linear_interpolation() {
 	GeodeFrameBuffer inperpolated( m_width, m_height, m_depth );
 
 	int x,y,color;
 
-	for( x = 0; x < m_width; x++ )
-	{
-		for( y = 0; y < m_height; y++ )
-		{
-			for( color = 0; color < m_depth; color++ )
-			{
+	for( x = 0; x < m_width; x++ ) {
+		for( y = 0; y < m_height; y++ ) {
+			for( color = 0; color < m_depth; color++ ) {
 				inperpolated(x,y,color) = linear_interpolation(x,y,color);
 			}
 		}
