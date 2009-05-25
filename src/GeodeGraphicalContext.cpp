@@ -27,6 +27,7 @@ void * GeodeGraphicalContext::msg_dispatch_thread( void *arg ){
 	
 	GeodeGraphicalContext * ggc = (GeodeGraphicalContext *)arg;
 	// see reference http://svn.python.org/projects/external/tk-8.5.2.0/xlib/X11/X.h
+	// see reference http://tronche.com/gui/x/xlib/event-handling/manipulating-event-queue/XCheckWindowEvent.html
 	long eventmask = ExposureMask        | KeyPressMask    |
 				  	 PointerMotionMask   | ButtonPressMask | 
 				  	 StructureNotifyMask | SubstructureRedirectMask | 
