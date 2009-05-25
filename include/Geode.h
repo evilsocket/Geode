@@ -423,16 +423,11 @@ class GeodeEventReceiver
 		virtual void OnPaint(){}
 		virtual void OnClose(){}
 		virtual void OnMouseMove( int x, int y ){}
-		virtual void OnLButtonDown(){}
-		virtual void OnRButtonDown(){}
-		virtual void OnMButtonDown(){}
-		virtual void OnLButtonUp(){}
-		virtual void OnRButtonUp(){}
-		virtual void OnMButtonUp(){}
+		virtual void OnMouseDown( unsigned int button, int x, int y );
+		virtual void OnMouseUp( unsigned int button, int x, int y );
 		virtual void OnInitialize(){}
 		virtual void OnKeyDown( int vKey, int kFlags ){}
 		virtual void OnKeyUp( int vKey, int kFlags ){}
-		virtual void OnCommand( int wNotifyCode, int wID, HWND hwndCtl  ){}
 };
 
 class GeodeWindow

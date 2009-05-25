@@ -26,8 +26,82 @@ void * GeodeGraphicalContext::msg_dispatch_thread( void *arg ){
 	g_trace( "GeodeGraphicalContext::msg_dispatch_thread( 0x%X )\n", arg );
 	
 	GeodeGraphicalContext * ggc = (GeodeGraphicalContext *)arg;
+	// see reference http://svn.python.org/projects/external/tk-8.5.2.0/xlib/X11/X.h
+	long eventmask = ExposureMask        | KeyPressMask    |
+				  	 PointerMotionMask   | ButtonPressMask | 
+				  	 StructureNotifyMask | SubstructureRedirectMask | 
+				  	 VisibilityChangeMask;
+	XEvent event;	 
 	
 	
+	XSelectInput( gcc->m_display, gcc->m_window, eventmask );
+	while(1){
+		// query X11 window event
+		XCheckWindowEvent( gcc->m_display, gcc->m_window, eventmask, &event );
+
+		switch( event.type ){
+			case CreateNotify : 
+				gcc->m_event_reciever->OnInitialize();
+			break;
+			
+			case DestroyNotify : 
+				gcc->m_event_reciever->OnClose();
+			break; 
+			
+			case KeyPress   : 
+			case KeyRelease : 
+				if( event.xkey.type == KeyPress ){
+					gcc->m_event_reciever->OnKeyDown( event.xkey.keycode, event.xkey.state );
+				}
+				else{
+					gcc->m_event_reciever->OnKeyUp( event.xkey.keycode, event.xkey.state );
+				}
+			break;
+			
+			case ButtonPress   : 
+			case ButtonRelease : 
+				if( event.xbutton.type == ButtonPress ){
+					gcc->m_event_reciever->OnMouseDown( event.xbutton.x, event.xbutton.y, event.xbutton.button );
+				}
+				else{
+					gcc->m_event_reciever->OnMouseUp( event.xbutton.x, event.xbutton.y, event.xbutton.button );
+				}
+			break;
+			
+			case MotionNotify : 
+				gcc->m_event_reciever->OnMouseMove( event.xmotion.x, event.xmotion.y );
+			break;
+			
+			case EnterNotify : break;
+			case LeaveNotify : break;
+			case FocusIn : break;
+			case FocusOut : break;
+			case KeymapNotify : break;
+			case Expose : break;
+			case GraphicsExpose : break;
+			case NoExpose : break;
+			case VisibilityNotify : break;
+			case UnmapNotify : break;
+			case MapNotify : break;
+			case MapRequest : break;
+			case ReparentNotify : break;
+			case ConfigureNotify : break;
+			case ConfigureRequest : break;
+			case GravityNotify : break;
+			case ResizeRequest : break;
+			case CirculateNotify : break;
+			case CirculateRequest : break;
+			case PropertyNotify : break;
+			case SelectionClear : break;
+			case SelectionRequest : break;
+			case SelectionNotify : break;
+			case ColormapNotify : break;
+			case ClientMessage : break;
+			case MappingNotify : break;
+		}
+		
+		// TODO : Add poll delay ?
+	}
 }
 
 GeodeGraphicalContext::GeodeGraphicalContext( const char * title, int width, int height, GeodeEventReceiver *eventReciever ){
