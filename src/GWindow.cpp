@@ -135,10 +135,11 @@ GWindow::GWindow( const char *title, unsigned int width, unsigned int height, GE
     XChangeWindowAttributes( m_display, m_window, CWBackingStore | CWBackingPlanes | CWBackingPixel, attr );
 
 	/* Select input methods */
-	long eventmask = ExposureMask        | KeyPressMask    |
-				  	 PointerMotionMask   | ButtonPressMask | 
-				  	 StructureNotifyMask | SubstructureRedirectMask | 
-				  	 VisibilityChangeMask;
+	long eventmask = ExposureMask        | 
+					 KeyPressMask        | KeyReleaseMask    |
+					 ButtonPressMask     | ButtonReleaseMask |
+				  	 PointerMotionMask   | StructureNotifyMask | 
+					 SubstructureRedirectMask | VisibilityChangeMask;
 	XSelectInput( m_display, m_window, eventmask );
 
     /* initialize the color pallete */
