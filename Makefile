@@ -6,6 +6,8 @@ LFLAGS = -lpthread -lX11
 
 
 all: 
+	$(CC) -c $(CFLAGS) $(SRCDIR)G3DObject.cpp 
+	$(CC) -c $(CFLAGS) $(SRCDIR)GFrameBuffer.cpp 
 	$(CC) -c $(CFLAGS) $(SRCDIR)GWindow.cpp 
 	$(CC) $(CFLAGS) $(SRCDIR)main.cpp $(LFLAGS) -o Geode *.o
 

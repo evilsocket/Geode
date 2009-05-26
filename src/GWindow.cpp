@@ -86,9 +86,7 @@ GWindow::GWindow( const char *title, unsigned int width, unsigned int height, GE
     }
 
 	/* get screen capabilities */
-    unsigned int screen  = DefaultScreen(m_display),
-    			 screenw = DisplayWidth( m_display, screen ),
-    			 screenh = DisplayHeight( m_display, screen );
+    unsigned int screen  = DefaultScreen(m_display);
 
 	/* create the window */
 	m_window = XCreateSimpleWindow( m_display, 
@@ -142,56 +140,35 @@ GWindow::GWindow( const char *title, unsigned int width, unsigned int height, GE
 					 SubstructureRedirectMask | VisibilityChangeMask;
 	XSelectInput( m_display, m_window, eventmask );
 
-    /* initialize the color pallete */
-    for( int i = 0; i < 256; i++ ){
-        unsigned short v = 256 - ((unsigned short)(65535.0/(float)256)) * i;
-        m_pallete[i].red   = v;
-        m_pallete[i].green = v;
-        m_pallete[i].blue  = v;
-        XAllocColor( m_display, m_wattr.colormap, &m_pallete[i] );
-    }
-
 	/* initialize the XImage */
-	unsigned int bpp, pad; 
+	unsigned int bpp; 
     switch( m_wattr.depth ){
     	case 8:
         	bpp = 1;
-        	pad = 8;
         break;
 
     	case 16:
         	bpp = 2;
-        	pad = 16;
         break;
 
     	case 24:
     	case 32:
         	bpp = 4;
-        	pad = 32;
         break;
 
     	default:
         	throw new GException( "Unsupported display depth ." );
     }
 
-	m_frame_buffer.data  = new unsigned char[  m_width * m_height * bpp ];//(unsigned char *)malloc( m_width * m_height * bpp );
-	m_frame_buffer.image = XCreateImage( m_display, 
-										 m_wattr.visual, 
-										 m_wattr.depth, 
-										 ZPixmap, 
-										 0,
-                      					 (char *)m_frame_buffer.data, 
-										 m_width, 
-										 m_height, 
-										 pad, 
-										 m_width * bpp );
-										 
-	if( XInitImage(m_frame_buffer.image) == 0 ){
-		throw new GException( "Could not initialize frame buffer ximage ." );	
-	}
-	
-	m_handler->window = this;
-	m_handler->buffer = &m_frame_buffer;
+	m_ggc = new GFrameBuffer( this,
+									   bpp, 
+				  					   m_width, 
+				  					   m_height,
+				  					   m_display,
+				  					   m_wattr.visual,
+				  					   m_wattr.depth );
+									   
+	m_handler->GCC = m_ggc;
 	
 	/* display the window */
     XMapWindow( m_display, m_window );
@@ -201,12 +178,16 @@ GWindow::GWindow( const char *title, unsigned int width, unsigned int height, GE
 	pthread_create( &tid, NULL, event_dispatcher, (void *)this );
 }
 
+GWindow::~GWindow(){
+	delete m_ggc;
+}
+
 void GWindow::update( unsigned int x /*= 0*/, unsigned int y /*= 0*/ ){
-	m_handler->OnPaint( &m_frame_buffer );
+	m_handler->OnPaint();
 	XPutImage( m_display, 
 			   m_window, 
 			   m_gc, 
-			   m_frame_buffer.image,
+			   m_ggc->ximage(),
 			   x, 
 			   y,
 			   x, 
